@@ -1,2 +1,9 @@
 .venv/
 react-shopping-cart/node_modules
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+.pytest_cache/
