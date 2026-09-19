@@ -36,14 +36,12 @@ def live_price_data():
     bidPrice = data['bidPrice']
     askPrice = data['askPrice']
 
-    return bidPrice
-    return askPrice
+    return bidPrice, askPrice 
 
 def corrupted_price_data():
     bidPrice = 100
     askPrice = 90
 
-    return bidPrice
-    return askPrice
+    return bidPrice, askPrice
 
     
