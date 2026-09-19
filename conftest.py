@@ -1,5 +1,7 @@
 import pytest
+import requests
 from src.config.env_config import Config
+from unittest.mock import patch
 
 # 1. The Global Setup (Runs once per test run)
 @pytest.fixture(scope="session", autouse=True)
@@ -22,3 +24,26 @@ def store_page(page):
     
     # Hand the ready-to-use browser to the test
     yield page
+
+@pytest.fixture
+def live_price_data():
+    r = requests.get('https://api.binance.com/api/v3/ticker/bookTicker?symbol=BTCUSDT')
+
+    print (r.status_code)
+
+    data = r.json()
+
+    bidPrice = data['bidPrice']
+    askPrice = data['askPrice']
+
+    return bidPrice
+    return askPrice
+
+def corrupted_price_data():
+    bidPrice = 100
+    askPrice = 90
+
+    return bidPrice
+    return askPrice
+
+    
