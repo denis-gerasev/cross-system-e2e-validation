@@ -27,21 +27,19 @@ def store_page(page):
 
 @pytest.fixture
 def live_price_data():
+    """
+    Provide live API data
+    """
     r = requests.get('https://api.binance.com/api/v3/ticker/bookTicker?symbol=BTCUSDT')
 
     print (r.status_code)
 
     data = r.json()
 
-    bidPrice = data['bidPrice']
-    askPrice = data['askPrice']
+    return {"bidPrice":data['bidPrice'], "askPrice":data['askPrice']}
 
-    return bidPrice, askPrice 
-
+@pytest.fixture
 def corrupted_price_data():
-    bidPrice = 100
-    askPrice = 90
-
-    return bidPrice, askPrice
+    return {"bidPrice":100.0, "askPrice":90.0}
 
     
