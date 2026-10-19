@@ -9,7 +9,7 @@ PORT=3000
 cleanup() {
   if [ -n "$NPM_PID" ]; then
     echo "Stopping npm server (PID: $NPM_PID)..."
-    kill -- -"$NPM_PID" 2>/dev/null || true
+    kill "$NPM_PID" 2>/dev/null || true
     wait "$NPM_PID" 2>/dev/null || true
   fi
 }
@@ -18,13 +18,10 @@ cleanup() {
 # interruption (INT/Ctrl+C) or script termination (TERM)
 trap cleanup EXIT INT TERM
 
-# Kill any leftover server listening on $PORT from previous runs
-lsof -ti tcp:$PORT -sTCP:LISTEN | xargs -r kill 2>/dev/null || true
-
 echo "Starting npm server"
 # Start in background (&) and redirect output, so server logs don't mix with test output
 
-setsid npm start > npm_server.log 2>&1 &
+npm start > npm_server.log 2>&1 &
 NPM_PID=$!
 
 echo "Waiting for $PORT to become ready..."

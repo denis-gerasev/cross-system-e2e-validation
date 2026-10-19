@@ -1,7 +1,7 @@
 import pytest
-import requests
+from src.api_clients.binance_client import BinanceClient, BookTicker
 from src.config.env_config import Config
-from unittest.mock import patch
+from decimal import Decimal
 
 # 1. The Global Setup (Runs once per test run)
 @pytest.fixture(scope="session", autouse=True)
@@ -25,21 +25,40 @@ def store_page(page):
     # Hand the ready-to-use browser to the test
     yield page
 
+@pytest.fixture(scope="session")
+def binance_client():
+    """The one client every Binance-touching fixture/test shares."""
+    return BinanceClient()
+
 @pytest.fixture
-def live_price_data():
+def live_book_ticker(binance_client):
+    """A single live BTCUSDT quote, fetched once per test that needs it."""
+    return binance_client.get_book_ticker("BTCUSDT")
+
+@pytest.fixture
+def live_price_data(live_book_ticker):
     """
-    Provide live API data
+    Provide live API data.
+
+    Kept as a raw string dict (Binance's own JSON shape) for
+    backward-compatibility with tests written against it directly;
+    `live_book_ticker` is the typed equivalent and does the actual network
+    call, so this fixture costs no extra request.
     """
-    r = requests.get('https://api.binance.com/api/v3/ticker/bookTicker?symbol=BTCUSDT')
-
-    print (r.status_code)
-
-    data = r.json()
-
-    return {"bidPrice":data['bidPrice'], "askPrice":data['askPrice']}
+    return {
+        "bidPrice": str(live_book_ticker.bid_price),
+        "askPrice": str(live_book_ticker.ask_price),
+    }
 
 @pytest.fixture
 def corrupted_price_data():
     return {"bidPrice":100.0, "askPrice":90.0}
 
-    
+@pytest.fixture
+def corrupted_book_ticker(corrupted_price_data):
+    """`corrupted_price_data`, typed - deliberately inverted (bid > ask)."""
+    return BookTicker(
+        symbol="BTCUSDT",
+        bid_price=Decimal(str(corrupted_price_data["bidPrice"])),
+        ask_price=Decimal(str(corrupted_price_data["askPrice"])),
+    )
