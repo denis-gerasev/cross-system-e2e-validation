@@ -3,6 +3,11 @@ set -e
 
 cd react-shopping-cart
 
+if [ ! -f node_modules/.bin/react-scripts ]; then
+  echo "react-scripts missing. Installing dependencies..."
+  npm install --legacy-peer-deps
+fi
+
 PORT=3000
 
 # Cleanup function: kills the background npm on any script exit
