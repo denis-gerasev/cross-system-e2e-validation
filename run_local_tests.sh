@@ -50,7 +50,7 @@ cd ../
 # Disable 'set -e', so the script
 # doesn't exit before cleanup call, if tests will fail
 set +e
-pytest
+pytest --headed -s
 TEST_EXIT_CODE=$?
 
 # Return pytest's exit code, so CI/CD knows whether the tests passed

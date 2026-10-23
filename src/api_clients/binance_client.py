@@ -9,11 +9,14 @@ sides are positive and the ask is strictly above the bid. See README.md
 from __future__ import annotations
 
 from dataclasses import dataclass
-from decimal import Decimal
+from decimal import ROUND_HALF_UP, Decimal
 
 import requests
 
 from src.config.env_config import Config
+
+# Smallest BTC unit (one satoshi) - amounts are rounded to this many places.
+SATOSHI = Decimal("0.00000001")
 
 
 class CorruptedPriceDataError(ValueError):
@@ -74,3 +77,18 @@ class BinanceClient:
             raise CorruptedPriceDataError(
                 f"Ask ({ticker.ask_price}) is not above bid ({ticker.bid_price}) in {ticker!r}"
             )
+
+    @staticmethod
+    def usd_to_btc(usd_amount: Decimal, ticker: BookTicker) -> Decimal:
+        """Convert a USD amount to BTC at the ask price (what buying BTC costs).
+
+        The quote is validated first, so a corrupted feed raises
+        `CorruptedPriceDataError` instead of silently producing a number.
+        The result is rounded to one satoshi (8 decimal places).
+        """
+        if ticker.symbol != "BTCUSDT":
+            raise ValueError(f"Expected a BTCUSDT quote, got {ticker.symbol!r}")
+        if usd_amount < 0:
+            raise ValueError(f"USD amount cannot be negative: {usd_amount}")
+        BinanceClient.validate(ticker)
+        return (usd_amount / ticker.ask_price).quantize(SATOSHI, rounding=ROUND_HALF_UP)
